@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<extension xmlns="http://addins.webcube.ser.com/v1" classpath=".;WEB-INF/lib;*">
+    <scripts>
+        <script active="{cxiBoolean}1"
+                class="com.ser.CustomerDocsFiling"
+                name="Upload Customer Document Filing"
+                reference="e71002de-eb04-470e-8027-d229e1662255"
+                server=""
+                system=""
+                type="filing"/>
+        <script active="{cxiBoolean}1"
+                class="com.ser.CustomerDocsRecord"
+                name="Upload Customer Document Record"
+                reference="b748d145-9288-4074-97c1-cf7d8538c18e"
+                server=""
+                system=""
+                type="record"/>
+        <script active="{cxiBoolean}1"
+                class="com.ser.CustomerDocsRecord"
+                name="Upload Customer Document Record"
+                reference="7087335b-cc68-42e7-8a99-b64fb4356464"
+                server=""
+                system=""
+                type="record"/>
+    </scripts>
+    <security>
+        <configuration>
+            <public-area>
+                <url-pattern>.*</url-pattern>
+            </public-area>
+        </configuration>
+    </security>
+</extension>
