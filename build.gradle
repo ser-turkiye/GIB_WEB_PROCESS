@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    def doxisVersion = "12.1.1"
+    def doxisVersion = "12.3.2"
     implementation (group: 'com.ser.doxis4.webcube', name: 'webcube-api', version: "$doxisVersion")
     implementation (group: 'com.ser.doxis4.webcube', name: 'groovy-webcube', version: "$doxisVersion")
 
@@ -67,6 +67,7 @@ class CubeDeployPlugin implements Plugin<Project> {
 
     //String baseURL = "http://dev.serturkiye.com/webcube"
     String baseURL = "http://127.0.0.1/webcube"
+    //String baseURL = "https://uigbikdev.sow.doxis.cloud/sedna-transfer-service-xf/service/webcube"
 
 
     Map<String,String> params = [
@@ -74,12 +75,23 @@ class CubeDeployPlugin implements Plugin<Project> {
             user    : "admin",
             password: "Ser@2023",
             server  : "websrv01",
-            system  : "SERTR",
+            system  : "",
             activate: "true",
             override: "true"
     ]
 
     /*
+    Map<String,String> params = [
+            name    : "GIB-WEB-PROCESS",
+            user    : "admin",
+            password: "Ser@2023",
+            server  : "websrv01",
+            system  : "",
+            activate: "true",
+            override: "true"
+    ]
+
+
     Map<String,String> params = [
             name    : "QCON-WEB-PROCESS",
             user    : "admin",

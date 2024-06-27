@@ -7,13 +7,20 @@ import com.ser.blueline.IInformationObject;
 import com.ser.evITAWeb.EvitaWebException;
 import com.ser.evITAWeb.api.IDialog;
 import com.ser.evITAWeb.api.actions.IBasicAction;
+import com.ser.evITAWeb.api.actions.IMessageAction;
+import com.ser.evITAWeb.api.actions.IStopFurtherAction;
+import com.ser.evITAWeb.api.archive.IArchiveDlg;
 import com.ser.evITAWeb.api.context.IFolderContext;
 import com.ser.evITAWeb.api.context.IScriptingContext;
 import com.ser.evITAWeb.api.context.ISourceContext;
 import com.ser.evITAWeb.api.controls.IControl;
+import com.ser.evITAWeb.api.controls.IMultiLineEdit;
+import com.ser.evITAWeb.api.controls.ISelectionBox;
 import com.ser.evITAWeb.api.controls.ITextField;
+import com.ser.evITAWeb.scripting.Doxis4ClassFactory;
 import com.ser.evITAWeb.scripting.archive.ArchiveScripting;
 import com.ser.foldermanager.INode;
+import utils.Utils;
 
 /**
  * Example class that demonstrates control scripting for selection boxes, buttons, text boxes and date fields. Requires an archive dialog with the following controls:<BR>
@@ -56,6 +63,70 @@ public class CustomerDocsArchive extends ArchiveScripting {
         return folderContext.getNode();
     }
     @Override
+    public IBasicAction onDescriptorValuesSave() throws EvitaWebException {
+        IArchiveDlg archivedlg = this.getDialog();
+        IControl typeField = archivedlg.getFieldByName("DocumentType");
+        String cat = "";
+        String value = "";
+        String mandFields = "";
+        String[] mandatoryDescs = new String[0];
+        try {
+            cat = Utils.getCategoryNameFromGVlist(getDoxisServer(),archivedlg.getId());
+        } catch (Exception e) {
+            log.error("bbb hata:::", e);
+            throw new EvitaWebException(e.getMessage());
+        }
+        log.info("VALIDATION DIALOG: " + archivedlg.getId());
+        log.info("VALIDATION CATEGORY: " + cat);
+        log.info("VALIDATION FIELD NAME222: " + typeField);
+
+        if (typeField != null && typeField instanceof ISelectionBox) {
+            ISelectionBox selectionBox = (ISelectionBox) typeField;
+            String typeValue = selectionBox.getSelectedItem();
+            log.info("VALIDATION TYPE FIELD VALUE: " + typeValue);
+            try {
+                mandFields = Utils.getMandatoryFromGVlist(getDoxisServer(),cat,typeValue,log);
+            } catch (Exception e) {
+                log.error("bbb hata:::", e);
+                throw new EvitaWebException(e.getMessage());
+            }
+
+            log.info("VALIDATION MAND FIELDS FROM GV: " + mandFields);
+            mandatoryDescs = mandFields.split(",");
+            log.info("VALIDATION MAND DESCSS FINAL: " + mandatoryDescs);
+            if(!mandFields.isEmpty()) {
+                for (String dName : mandatoryDescs) {
+                    log.info("VALIDATION CHECK MAND DESC NAME: " + dName);
+                    IControl checkField = archivedlg.getFieldByName(dName);
+                    if (checkField != null && checkField instanceof ITextField) {
+                        ITextField textField = (ITextField) checkField;
+                        value = textField.getText();
+                        log.info("VALIDATION CHECK MAND DESC VALUE: " + value);
+                    }
+                    if (value == null || "".equals(value)) {
+                        IStopFurtherAction createStopFurtherAction = Doxis4ClassFactory.createStopFurtherAction();
+                        createStopFurtherAction.setMessage("Please fill in the " + checkField.getName() + "");
+                        createStopFurtherAction.setType(IMessageAction.EnumMessageType.ERROR);
+                        return createStopFurtherAction;
+                    }
+                }
+            }
+        }
+//        if (true) {
+//            IStopFurtherAction createStopFurtherAction = Doxis4ClassFactory.createStopFurtherAction();
+//            createStopFurtherAction.setMessage("Files above 1 MB are not permitted. Try again after cleanup!!!");
+//            createStopFurtherAction.setType(IMessageAction.EnumMessageType.ERROR);
+//            return createStopFurtherAction;
+//        } else {
+//            IMessageAction msg = Doxis4ClassFactory.createShowMessageAction();
+//            msg.setMessage("Descriptors saved!");
+//            msg.setCaption("Done");
+//            msg.setType(IMessageAction.EnumMessageType.INFO);
+//            return msg;
+//        }
+        return null;
+    }
+    @Override
     public void onInit() throws EvitaWebException {
         try {
             log.info("GIB WEB CUBE----Archive OnInit Start.......");
@@ -71,12 +142,14 @@ public class CustomerDocsArchive extends ArchiveScripting {
             for(IControl ctrl : fields){
                 String descriptorId = ctrl.getDescriptorId();
                 if(descriptorId == null) continue;
+                if(descriptorId.equals("0644eb7c-1280-447c-923e-3856c7dfb94e")) continue;
                 String descriptorValue = parentFolder.getDescriptorValue(descriptorId);
                 log.info("DESC.ID:" + descriptorId);
                 log.info("DESC.VALUE:" + descriptorValue);
                 if(!(ctrl instanceof ITextField)) continue;
                 if(descriptorValue != null){
                     ((ITextField) ctrl).setText(descriptorValue);
+                    ctrl.setReadonly(true);
                 }
             }
             super.onInit();

@@ -1,7 +1,11 @@
 package utils;
 
+import com.ser.blueline.IDocumentServer;
 import com.ser.blueline.IInformationObject;
+import com.ser.blueline.ISession;
+import com.ser.blueline.metaDataComponents.IStringMatrix;
 import com.ser.evITAWeb.api.IDialog;
+import com.ser.evITAWeb.api.IDoxisServer;
 import com.ser.evITAWeb.api.context.IFolderContext;
 import com.ser.evITAWeb.api.context.IScriptingContext;
 import com.ser.evITAWeb.api.context.ISourceContext;
@@ -208,5 +212,42 @@ public class Utils {
             LOG.warn("setTextfieldValue not supported for control <{}>", iControl.getName());
         }
 
+    }
+    public static String getCategoryNameFromGVlist(IDoxisServer server, String ID) throws Exception {
+        String rtrn = "";
+        ISession session = server.getSession();
+        IStringMatrix settingsMatrix = session.getDocumentServer().getStringMatrixByID("DocumentClasses", session);
+        if(settingsMatrix!=null) {
+            for (int i = 0; i < settingsMatrix.getRowCount(); i++) {
+                String rowID = settingsMatrix.getValue(i, 0);
+                String rowName = settingsMatrix.getValue(i, 1);
+                if (rowID.equalsIgnoreCase(ID)) {
+                    rtrn = rowName;
+                    break;
+                }
+            }
+        }
+        return rtrn;
+    }
+    public static String getMandatoryFromGVlist(IDoxisServer server, String category, String type, Logger log) throws Exception {
+        String rtrn = "";
+        log.info("Start GET MAND FROM GV...:::");
+        ISession session = server.getSession();
+        IStringMatrix settingsMatrix = session.getDocumentServer().getStringMatrix("GibFolderAllDocType", session);
+        if(settingsMatrix!=null) {
+            for (int i = 0; i < settingsMatrix.getRowCount(); i++) {
+                String rowID = settingsMatrix.getValue(i, 0);
+                String rowName = settingsMatrix.getValue(i, 1);
+                String rowType = settingsMatrix.getValue(i, 2);
+                String rowMand = settingsMatrix.getValue(i, 3);
+                //log.info("GET MAND GV.::: ROW-NAME::::" + rowName);
+                //log.info("GET MAND GV.::: ROW-TYPE::::" + rowType);
+                if (rowName.equalsIgnoreCase(category) && rowType.equalsIgnoreCase(type)) {
+                    rtrn = rowMand;
+                    break;
+                }
+            }
+        }
+        return rtrn;
     }
 }
